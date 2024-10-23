@@ -3,7 +3,7 @@
 # fraud-detection-artefact
 
 [![CI status](https://github.com/artefactory-nl/fraud-detection/actions/workflows/ci.yaml/badge.svg)](https://github.com/artefactory-nl/fraud-detection/actions/workflows/ci.yaml?query=branch%3Amain)
-[![Python Version](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue.svg)]()
+[![Python Version](https://img.shields.io/badge/python-3.10-blue)]()
 
 [![Linting , formatting, imports sorting: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/charliermarsh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![security: bandit](https://img.shields.io/badge/security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
