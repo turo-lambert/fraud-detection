@@ -5,18 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fraud-detection"
 authors = [
-  { name = "Alberto Stella", email = "alberto.stella@artefact.com" },
-  { name = "Pablo Vizan Siso", email = "pablo.siso@artefact.com" },
-  { name = "Calogero Zarbo", email = "calogero.zarbo@artefact.com" },
+  { name = "Arthur Lambert", email = "arthur.lamebrt238@gmail.com" },
 ]
-description = "Repository developed for the project Early Trend Watcher for Dolce&Gabbana"
+description = "Repository developed for the purpose of fraud detection."
 version = "0.0.1"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [project.urls]
-"Homepage" = "https://github.com/artefactory-nl-nl/fraud-detection"
-"Documentation" = "https://artefactory-nl.github.io/fraud-detection-artefact/"
+"Homepage" = "https://github.com/turo-lambert/fraud-detection"
 
 [tool.setuptools]
 packages = [
@@ -40,8 +37,8 @@ select = [
   "PTH",
   "PD",
 ] # See: https://beta.ruff.rs/docs/rules/
-ignore = ["D203", "D213", "ANN101", "ANN102"]
-line-length = 100
+ignore = ["D203", "D213", "ANN101", "ANN102", "N803"]
+line-length = 120
 target-version = "py310"
 exclude = [
   ".bzr",
@@ -69,6 +66,9 @@ quote-style = "double"
 
 [tool.ruff.isort]
 known-first-party = ["lib", "config", "tests"]
+
+[tool.bandit]
+skips = ["B301"]
 
 [tool.bandit.assert_used]
 exclude_dirs = ["tests/"]
