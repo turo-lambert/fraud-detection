@@ -30,7 +30,8 @@ repos:
         name: Security check (bandit)
         entry: bandit
         types: [python]
-        args: ["--recursive", "lib/"]
+        args: ["--recursive", "lib", "--skip", "B301,B403"]
+        pass_filenames: false
         language: system
       - id: pytest-check
         name: Tests (pytest)

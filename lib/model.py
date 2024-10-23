@@ -1,11 +1,15 @@
 """Contains the FraudDetectionModel class for training, evaluating, and saving an XGBoost model."""
-# import pickle
+import logging
+import pickle
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 import numpy as np
 import xgboost as xgb
 from sklearn.metrics import classification_report, roc_auc_score
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class FraudDetectionModel:
@@ -45,7 +49,7 @@ class FraudDetectionModel:
         """
         self.model.fit(X_train, y_train)
         self.is_trained = True
-        print("Model training completed.")
+        logger.info("Model training completed.")
 
     def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, Any]:
         """Evaluates the model on the test set and returns the evaluation metrics.
@@ -72,8 +76,8 @@ class FraudDetectionModel:
         auc_roc = roc_auc_score(y_test, y_pred_proba)
 
         # Print evaluation results
-        print("Classification Report:\n", report)
-        print(f"AUC-ROC: {auc_roc}")
+        logger.info("Classification Report:\n", report)
+        logger.info(f"AUC-ROC: {auc_roc}")
 
         return {"classification_report": report, "auc_roc": auc_roc}
 
@@ -100,10 +104,9 @@ class FraudDetectionModel:
         Args:
             filepath (str): Path where the model should be saved.
         """
-        # with Path.open(filepath, "wb") as f:
-        # pickle.dump(self.model, f)
-        # pass
-        print(f"Model saved to {filepath}")
+        with Path.open(filepath, "wb") as f:
+            pickle.dump(self.model, f)
+        logger.info(f"Model saved to {filepath}")
 
     def load_model(self, filepath: str) -> None:
         """Loads a previously trained model from a file.
@@ -117,7 +120,7 @@ class FraudDetectionModel:
         if not Path.exists(filepath):
             raise FileNotFoundError(f"No model found at {filepath}")
 
-        # with Path.open(filepath, "rb") as f:
-        # self.model = pickle.load(f)
-        # self.is_trained = True
-        print(f"Model loaded from {filepath}")
+        with Path.open(filepath, "rb") as f:
+            self.model = pickle.load(f)
+            self.is_trained = True
+        logger.info(f"Model loaded from {filepath}")

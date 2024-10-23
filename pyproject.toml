@@ -67,8 +67,5 @@ quote-style = "double"
 [tool.ruff.isort]
 known-first-party = ["lib", "config", "tests"]
 
-[tool.bandit]
-skips = ["B301"]
-
 [tool.bandit.assert_used]
 exclude_dirs = ["tests/"]
