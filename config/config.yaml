@@ -38,4 +38,4 @@ model:
       n_estimators: [50, 300]
     log_hp:
       learning_rate: [0.01, 0.3]
-    n_trials: 10
+    n_trials: 100
