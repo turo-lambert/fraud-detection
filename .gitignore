@@ -210,3 +210,5 @@ secrets/*
 
 # Mac OS
 .DS_Store
+
+models/
