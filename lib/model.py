@@ -184,3 +184,22 @@ class FraudDetectionModel:
             model_instance = pickle.load(f)  # Load the entire instance
         logger.info(f"Model loaded from {filepath}")
         return model_instance
+
+
+def load_latest_model(directory: str) -> FraudDetectionModel:
+    """Loads the most recent model from a given directory.
+
+    Args:
+        directory (str): Path to the directory containing model files.
+
+    Returns:
+        FraudDetectionModel: The loaded model.
+    """
+    model_dir = Path(directory)
+    model_files = sorted(model_dir.glob("*.pkl"), key=lambda x: x.stat().st_mtime, reverse=True)
+
+    if not model_files:
+        raise FileNotFoundError("No model files found in the specified directory.")
+
+    latest_model_path = model_files[0]
+    return FraudDetectionModel.load_model(latest_model_path)

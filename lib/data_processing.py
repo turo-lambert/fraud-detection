@@ -1,11 +1,18 @@
 """Data processing functions for the project."""
+import logging
+import pickle
 from datetime import datetime
+from pathlib import Path
 from typing import Optional
 
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import LabelEncoder
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 class FeatureEngineer(BaseEstimator, TransformerMixin):
@@ -160,3 +167,34 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
                     X[col] = X[col].astype(dtype)
 
         return X
+
+    def save_model(self, filepath: str) -> None:
+        """Saves the entire FeatureEngineer instance to a file using pickle.
+
+        Args:
+            filepath (str): Path where the instance should be saved.
+        """
+        with Path(filepath).open("wb") as f:
+            pickle.dump(self, f)  # Save the entire instance
+        logger.info(f"FeatureEngineer instance saved to {filepath}")
+
+    @classmethod
+    def load_model(cls, filepath: str) -> "FeatureEngineer":
+        """Loads a previously saved FeatureEngineer instance from a file.
+
+        Args:
+            filepath (str): Path to the saved file.
+
+        Returns:
+            FeatureEngineer: The loaded FeatureEngineer instance.
+
+        Raises:
+            FileNotFoundError: If the specified model file does not exist.
+        """
+        if not Path(filepath).exists():
+            raise FileNotFoundError(f"No model found at {filepath}")
+
+        with Path(filepath).open("rb") as f:
+            instance = pickle.load(f)  # Load the entire instance
+        logger.info(f"FeatureEngineer instance loaded from {filepath}")
+        return instance
