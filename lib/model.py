@@ -155,28 +155,32 @@ class FraudDetectionModel:
         return (y_pred_proba >= self.threshold).astype(int)
 
     def save_model(self, filepath: str) -> None:
-        """Saves the trained model to a file using pickle.
+        """Saves the entire FraudDetectionModel instance to a file using pickle.
 
         Args:
             filepath (str): Path where the model should be saved.
         """
-        with Path.open(filepath, "wb") as f:
-            pickle.dump(self.model, f)
+        with Path(filepath).open("wb") as f:
+            pickle.dump(self, f)  # Save the entire instance
         logger.info(f"Model saved to {filepath}")
 
-    def load_model(self, filepath: str) -> None:
-        """Loads a previously trained model from a file.
+    @classmethod
+    def load_model(cls, filepath: str) -> "FraudDetectionModel":
+        """Loads a previously saved FraudDetectionModel instance from a file.
 
         Args:
             filepath (str): Path to the saved model file.
 
+        Returns:
+            FraudDetectionModel: The loaded FraudDetectionModel instance.
+
         Raises:
             FileNotFoundError: If the specified model file does not exist.
         """
-        if not Path.exists(filepath):
+        if not Path(filepath).exists():
             raise FileNotFoundError(f"No model found at {filepath}")
 
-        with Path.open(filepath, "rb") as f:
-            self.model = pickle.load(f)
-            self.is_trained = True
+        with Path(filepath).open("rb") as f:
+            model_instance = pickle.load(f)  # Load the entire instance
         logger.info(f"Model loaded from {filepath}")
+        return model_instance

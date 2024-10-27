@@ -45,7 +45,7 @@ def setup_data() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, HPTuni
 
 
 def test_train_and_evaluate(
-    setup_data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, "HPTuningConfig", dict[str, Any]]
+    setup_data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, HPTuningConfig, dict[str, Any]]
 ) -> None:
     """Tests the training and evaluation process of the model.
 
@@ -67,7 +67,7 @@ def test_train_and_evaluate(
 
 
 def test_save_and_load_model(
-    setup_data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, "HPTuningConfig", dict[str, Any]]
+    setup_data: Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, HPTuningConfig, dict[str, Any]]
 ) -> None:
     """Tests the save and load functionality of the model.
 
