@@ -1,0 +1,25 @@
+preprocessing:
+  cols_to_drop: [
+    "sys_sector",
+    "sys_label",
+    "sys_process",
+    "sys_product",
+    "sys_dataspecification_version",
+    "sys_claimid",
+    "sys_currency_code",
+    "ph_firstname",
+    "ph_gender",
+    "ph_name",
+    "claim_id_mapping"
+  ]
+  categorical_cols: [
+    "claim_causetype",
+    "object_make",
+    "policy_profitability",
+  ]
+  claim_occured_col: claim_date_occurred
+  claim_reported_col: claim_date_reported
+  types_mapping:
+    claim_amount_claimed_total: int
+    object_year_construction: int
+    policy_insured_amount: Int64
