@@ -89,7 +89,7 @@ def test_save_and_load_model(
     assert isinstance(loaded_model, FraudDetectionModel), "Model should be a FraudDetectionModel object"
 
     # Clean up saved model file
-    Path.unlink(filepath)
+    Path.unlink(Path(filepath))
 
 
 def test_threshold_setting(
