@@ -2,13 +2,15 @@
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import numpy as np
 import optuna
 import xgboost as xgb
-from sklearn.metrics import classification_report, roc_auc_score
-from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, precision_recall_curve, roc_auc_score
+from sklearn.model_selection import StratifiedKFold, cross_val_predict, train_test_split
+
+from lib.load_config import HPTuningConfig
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,39 +20,39 @@ logger = logging.getLogger(__name__)
 class FraudDetectionModel:
     """A class to represent the fraud detection model."""
 
-    def __init__(self, scale_pos_weight: Optional[float] = None, model_params: Optional[Dict[str, Any]] = None) -> None:
-        """Initializes the FraudDetectionModel with optional parameters.
+    def __init__(self, scale_pos_weight: float, model_params: dict[str, str], hp_config: HPTuningConfig) -> None:
+        """Initializes the FraudDetectionModel with parameters.
 
         Args:
-            scale_pos_weight (Optional[float]): The weight to handle imbalanced data.
-                This is used to give more importance to the minority class (fraud). Defaults to None.
-            model_params (Optional[Dict[str, Any]]): Optional dictionary of additional XGBoost parameters.
-                If None, a default parameter set will be used. Defaults to None.
+            scale_pos_weight (float): The weight to handle imbalanced data.
+                This is used to give more importance to the minority class (fraud).
+            model_params (dict[str, str]): Dictionary of additional XGBoost parameters.
+            hp_config (HPTuningConfig): Configuration for hyperparameter tuning.
         """
         self.scale_pos_weight = scale_pos_weight
-        self.model_params = model_params or {
-            "objective": "binary:logistic",
-            "eval_metric": "aucpr",
-            "use_label_encoder": False,
-        }
-        if self.scale_pos_weight:
-            self.model_params["scale_pos_weight"] = scale_pos_weight
-
+        self.model_params = model_params
+        self.hp_config = hp_config
+        self.model_params["scale_pos_weight"] = scale_pos_weight
         self.model = xgb.XGBClassifier(**self.model_params)
         self.is_trained = False
+        self.threshold = 0.5
 
-    def train(self, X_train: np.ndarray, y_train: np.ndarray) -> None:
+    def train(self, X: np.ndarray, y: np.ndarray) -> None:
         """Trains the XGBoost model using the provided training data.
 
         Args:
-            X_train (np.ndarray): Training features.
-            y_train (np.ndarray): Training labels.
+            X (np.ndarray): Training features.
+            y (np.ndarray): Training labels.
         """
+        X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+        self._optimize_hyperparameters(X_train, y_train)
         self.model.fit(X_train, y_train)
+        y_pred_proba = self.model.predict_proba(X_val)[:, 1]
+        self._find_optimal_threshold(y_val, y_pred_proba)
         self.is_trained = True
         logger.info("Model training completed.")
 
-    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> Dict[str, Any]:
+    def evaluate(self, X_test: np.ndarray, y_test: np.ndarray) -> dict[str, Any]:
         """Evaluates the model on the test set and returns the evaluation metrics.
 
         Args:
@@ -66,8 +68,8 @@ class FraudDetectionModel:
         if not self.is_trained:
             raise Exception("Model has not been trained yet.")
 
-        y_pred = self.model.predict(X_test)
         y_pred_proba = self.model.predict_proba(X_test)[:, 1]
+        y_pred = (y_pred_proba >= self.threshold).astype(int)
 
         report = classification_report(y_test, y_pred)
         auc_roc = roc_auc_score(y_test, y_pred_proba)
@@ -77,49 +79,61 @@ class FraudDetectionModel:
 
         return {"classification_report": report, "auc_roc": auc_roc}
 
-    def optimize_hyperparameters(self, X_train: np.ndarray, y_train: np.ndarray, n_trials: int = 50) -> None:
+    def _optimize_hyperparameters(self, X_train: np.ndarray, y_train: np.ndarray) -> None:
         """Optimizes hyperparameters using Optuna.
 
         Args:
             X_train (np.ndarray): Training features.
             y_train (np.ndarray): Training labels.
-            n_trials (int): Number of trials for Optuna optimization. Defaults to 50.
-
         """
         # Split the data into a training and validation set for tuning
-        X_train_split, X_val_split, y_train_split, y_val_split = train_test_split(
-            X_train, y_train, test_size=0.2, random_state=42
-        )
+        skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 
         # Define the Optuna objective function
         def objective(trial: optuna.Trial) -> float:
+            float_hp = {
+                hp_name: trial.suggest_float(hp_name, low=bounds[0], high=bounds[1])
+                for hp_name, bounds in dict(self.hp_config.float_hp).items()
+            }
+            int_hp = {
+                hp_name: trial.suggest_int(hp_name, low=bounds[0], high=bounds[1])
+                for hp_name, bounds in dict(self.hp_config.int_hp).items()
+            }
+            categorical_hp = {
+                hp_name: trial.suggest_float(hp_name, low=bounds[0], high=bounds[1], log=True)
+                for hp_name, bounds in dict(self.hp_config.log_hp).items()
+            }
+
             params = {
-                "objective": "binary:logistic",
-                "eval_metric": "aucpr",
-                "use_label_encoder": False,
-                "scale_pos_weight": trial.suggest_float("scale_pos_weight", 1.0, 10.0),
-                "max_depth": trial.suggest_int("max_depth", 3, 10),
-                "learning_rate": trial.suggest_loguniform("learning_rate", 0.01, 0.3),
-                "n_estimators": trial.suggest_int("n_estimators", 50, 300),
-                "subsample": trial.suggest_float("subsample", 0.5, 1.0),
-                "colsample_bytree": trial.suggest_float("colsample_bytree", 0.5, 1.0),
-                "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
+                **self.model_params,
+                **float_hp,
+                **int_hp,
+                **categorical_hp,
             }
 
             model = xgb.XGBClassifier(**params)
-            model.fit(X_train_split, y_train_split)
-            y_pred_val = model.predict_proba(X_val_split)[:, 1]
+            y_pred_proba = cross_val_predict(model, X_train, y_train, cv=skf, method="predict_proba")[:, 1]
 
-            return roc_auc_score(y_val_split, y_pred_val)
+            return roc_auc_score(y_train, y_pred_proba)
 
         # Run the optimization
-        study = optuna.create_study(direction="maximize")
-        study.optimize(objective, n_trials=n_trials)
+        sampler = optuna.samplers.TPESampler(seed=42)
+        study = optuna.create_study(sampler=sampler, direction="maximize")
+        study.optimize(objective, n_trials=self.hp_config.n_trials)
 
         # Update model parameters and reinitialize the model with the best params
         self.model_params.update(study.best_params)
         self.model = xgb.XGBClassifier(**self.model_params)
         logger.info("Best parameters found by Optuna: %s", study.best_params)
+
+    def _find_optimal_threshold(self, y_true: np.ndarray, y_pred_proba: np.ndarray) -> None:
+        """Finds the optimal classification threshold for F1 score."""
+        precisions, recalls, thresholds = precision_recall_curve(y_true, y_pred_proba)
+        f1_scores = 2 * (precisions * recalls) / (precisions + recalls + 1e-10)
+        optimal_idx = np.argmax(f1_scores)
+        optimal_threshold = thresholds[optimal_idx]
+        logger.info(f"Optimal threshold for F1 score: {optimal_threshold}")
+        self.threshold = optimal_threshold
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """Makes predictions on new data.
@@ -136,7 +150,9 @@ class FraudDetectionModel:
         if not self.is_trained:
             raise Exception("Model has not been trained yet.")
 
-        return self.model.predict(X)
+        y_pred_proba = self.model.predict_proba(X)[:, 1]
+
+        return (y_pred_proba >= self.threshold).astype(int)
 
     def save_model(self, filepath: str) -> None:
         """Saves the trained model to a file using pickle.

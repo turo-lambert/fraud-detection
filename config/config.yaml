@@ -23,3 +23,19 @@ preprocessing:
     claim_amount_claimed_total: int
     object_year_construction: int
     policy_insured_amount: Int64
+
+model:
+  params:
+    objective: binary:logistic
+    random_state: 42
+  hp_tuning:
+    float_hp:
+      subsample: [0.5, 1]
+      colsample_bytree: [0.5, 1]
+    int_hp:
+      max_depth: [3, 10]
+      min_child_weight: [1, 10]
+      n_estimators: [50, 300]
+    log_hp:
+      learning_rate: [0.01, 0.3]
+    n_trials: 10

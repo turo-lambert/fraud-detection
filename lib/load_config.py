@@ -29,16 +29,42 @@ class ConfigBaseModel(BaseModel):
 class PreprocessingConfig(ConfigBaseModel):
     """Preprocessing Config."""
 
-    cols_to_drop: list[str]
-    categorical_cols: list[str]
-    claim_occured_col: str
-    claim_reported_col: str
+    cols_to_drop: list[str] = Field(..., description="List of columns to drop if they are not useful for modeling.")
+    categorical_cols: list[str] = Field(..., description="List of categorical columns to be encoded.")
+    claim_occured_col: str = Field(..., description="Column name for the claim occurrence date.")
+    claim_reported_col: str = Field(..., description="Column name for the claim reported date.")
     types_mapping: Optional[dict[str, str]] = Field(
         default=None, description="Mapping of column names to their data types."
     )
+
+
+class HPTuningConfig(ConfigBaseModel):
+    """Hyperparameters Config."""
+
+    float_hp: dict[str, list[float]] = Field(
+        ...,
+        description="Dictionary containing float hyperparameters and their search space.",
+    )
+    int_hp: dict[str, list[float]] = Field(
+        ...,
+        description="Dictionary containing integer hyperparameters and their search space.",
+    )
+    log_hp: dict[str, list[float]] = Field(
+        ...,
+        description="Dictionary containing log hyperparameters and their search space.",
+    )
+    n_trials: int = Field(default=50, description="Number of trials to run for hyperparameter tuning.")
+
+
+class ModellingConfig(ConfigBaseModel):
+    """Modelling Config."""
+
+    params: dict[str, str | int | float]
+    hp_tuning: HPTuningConfig
 
 
 class BaseConfig(ConfigBaseModel):
     """Base Config."""
 
     preprocessing: PreprocessingConfig
+    model: ModellingConfig
