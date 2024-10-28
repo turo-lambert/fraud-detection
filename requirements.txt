@@ -9,3 +9,4 @@ scikit-learn==1.5.2
 xgboost==2.1.2
 optuna==4.0.0
 flask==3.0.3
+streamlit==1.39.0
