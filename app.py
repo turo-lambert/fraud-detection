@@ -1,14 +1,11 @@
 """Fast API taking care of serving the model."""
-import numpy as np
 import pandas as pd
+import shap
 from flask import Flask, Request, jsonify, request
 
+from config.config import FE_PATH, MODEL_PATH
 from lib.data_processing import FeatureEngineer
 from lib.model import FraudDetectionModel
-
-MODEL_PATH = "models/fraud_detection/fraud_detection_model.pkl"
-FE_PATH = "models/feature_engineering/feature_engineer.pkl"
-
 
 app = Flask(__name__)
 
@@ -25,7 +22,7 @@ except FileNotFoundError:
     app.logger.error("No Feature Engineering instance found. Make sure a model file exists in the specified directory.")
 
 
-def preprocess_observation(fe: FeatureEngineer, observation: list[float]) -> np.ndarray:
+def preprocess_observation(fe: FeatureEngineer, observation: list[float]) -> pd.DataFrame:
     """Preprocesses a single observation before inference.
 
     Args:
@@ -38,7 +35,6 @@ def preprocess_observation(fe: FeatureEngineer, observation: list[float]) -> np.
     # Placeholder for actual preprocessing or feature engineering steps
     processed_observation = pd.DataFrame.from_dict(observation)
     processed_observation = fe.transform(processed_observation)
-    processed_observation = np.array(processed_observation).reshape(1, -1)
     return processed_observation
 
 
@@ -54,7 +50,6 @@ def score() -> Request:
 
     # Get JSON data from request
     data = request.get_json()
-    # TODO: pydantic schema to validate data input
 
     # Preprocess the input observation
     observation = data
@@ -66,8 +61,20 @@ def score() -> Request:
     except Exception as e:
         return jsonify({"error": f"Prediction error: {str(e)}"}), 500
 
+    try:
+        explainer = shap.TreeExplainer(model.model)
+        shap_values = explainer.shap_values(processed_obs)
+    except Exception as e:
+        return jsonify({"error": f"SHAP error: {str(e)}"}), 500
+
     # Return the prediction and probability
-    return jsonify({"prediction": str(prediction[0])})
+    return jsonify(
+        {
+            "prediction": str(prediction[0]),
+            "processed_obs": processed_obs.to_dict(orient="list"),
+            "shap_values": shap_values.tolist(),
+        }
+    )
 
 
 # For local testing and debugging, use:

@@ -11,3 +11,4 @@ optuna==4.0.0
 flask==3.0.3
 streamlit==1.39.0
 gunicorn==23.0.0
+shap==0.46.0

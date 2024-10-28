@@ -1,10 +1,14 @@
 """Useful page to run inference on the model."""
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import requests
+import shap
 import streamlit as st
 
 # URL for the REST API endpoint
-API_URL = "http://localhost:5001/score"
+# API_URL = "http://localhost:5001/score"
+API_URL = "http://127.0.0.1:5001/score"
 
 
 def write() -> None:
@@ -109,6 +113,13 @@ def write() -> None:
             if response.status_code == 200:
                 prediction = response.json().get("prediction")
                 st.success(f"Prediction: {prediction}")
+                processed_obs = pd.DataFrame.from_dict(response.json().get("processed_obs"))
+                shap_values = np.array(response.json().get("shap_values"))
+                st.subheader("SHAP Feature Importance")
+                fig, _ = plt.subplots(figsize=(20, 5))
+                shap.summary_plot(shap_values, processed_obs, plot_type="bar", show=False)
+                st.pyplot(fig, use_container_width=True)
+
             else:
                 st.error(f"Error: {response.text}")
         except Exception as e:
