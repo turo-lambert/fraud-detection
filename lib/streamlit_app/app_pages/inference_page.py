@@ -4,7 +4,7 @@ import requests
 import streamlit as st
 
 # URL for the REST API endpoint
-API_URL = "http://127.0.0.1:5000/score"  # Replace with your actual REST API endpoint
+API_URL = "http://localhost:5001/score"
 
 
 def write() -> None:

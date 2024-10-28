@@ -16,16 +16,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
-# Step 6: Expose the port your application runs on (if using Flask or FastAPI, the default is 5000)
-EXPOSE 5000
+# Step 6: Expose the port your application runs on
+EXPOSE 5001
 
-# Step 7: Define environment variables (optional)
-ENV FLASK_ENV=production
+# Step 7: Specify the command to run your app using `gunicorn` for performance
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5001", "app:app"]
 
-# Step 8: Specify the command to run your app using `gunicorn` for performance
-CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
-
-# Step 9: Clean up any unnecessary files (optional step)
+# Step 8: Clean up any unnecessary files (optional step)
 RUN apt-get remove --purge -y build-essential && \
     apt-get autoremove -y && \
     apt-get clean
