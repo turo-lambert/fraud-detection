@@ -7,8 +7,7 @@ import shap
 import streamlit as st
 
 # URL for the REST API endpoint
-# API_URL = "http://localhost:5001/score"
-API_URL = "http://127.0.0.1:5001/score"
+API_URL = "http://localhost:5001/score"
 
 
 def write() -> None:
@@ -16,7 +15,6 @@ def write() -> None:
     st.title("Fraud Detection Model Inference")
     st.markdown("Input the details of a claim to predict whether it is fraudulent or not.")
 
-    # Define placeholders for each payload field
     payload = {
         "sys_sector": st.selectbox("System Sector", ["Private NonLife"]),
         "sys_label": st.selectbox("System Label", ["FRISS"]),

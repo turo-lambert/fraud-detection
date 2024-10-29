@@ -22,7 +22,7 @@ EXPOSE 5001
 # Step 7: Specify the command to run your app using `gunicorn` for performance
 CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5001", "app:app"]
 
-# Step 8: Clean up any unnecessary files (optional step)
+# Step 8: Clean up any unnecessary files
 RUN apt-get remove --purge -y build-essential && \
     apt-get autoremove -y && \
     apt-get clean
