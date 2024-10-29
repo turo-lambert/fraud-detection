@@ -14,6 +14,7 @@ API_URL = "http://127.0.0.1:5001/score"
 def write() -> None:
     """Writes the page."""
     st.title("Fraud Detection Model Inference")
+    st.markdown("Input the details of a claim to predict whether it is fraudulent or not.")
 
     # Define placeholders for each payload field
     payload = {
@@ -116,6 +117,9 @@ def write() -> None:
                 processed_obs = pd.DataFrame.from_dict(response.json().get("processed_obs"))
                 shap_values = np.array(response.json().get("shap_values"))
                 st.subheader("SHAP Feature Importance")
+                st.markdown(
+                    "The following plot shows the average impact of each feature on the model output magnitude."
+                )
                 fig, _ = plt.subplots()
                 shap.summary_plot(
                     shap_values,
