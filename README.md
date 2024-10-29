@@ -43,24 +43,6 @@ make help
 
 TODO: Add usage instructions here
 
-## Documentation
-
-TODO: Github pages is not enabled by default, you need to enable it in the repository settings: Settings > Pages > Source: "Deploy from a branch" / Branch: "gh-pages" / Folder: "/(root)"
-
-A detailed documentation of this project is available [here](https://artefactory-nl.github.io/fraud-detection/)
-
-To serve the documentation locally, run the following command:
-
-```bash
-mkdocs serve
-```
-
-To build it and deploy it to GitHub pages, run the following command:
-
-```bash
-make deploy_docs
-```
-
 ## Repository Structure
 
 ```
@@ -68,7 +50,7 @@ make deploy_docs
 ├── .github    <- GitHub Actions workflows and PR template
 ├── bin        <- Bash files
 ├── config     <- Configuration files
-├── docs       <- Documentation files (mkdocs)
+├── docs       <- Documentation files
 ├── lib        <- Python modules
 ├── notebooks  <- Jupyter notebooks
 ├── secrets    <- Secret files (ignored by git)

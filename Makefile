@@ -21,14 +21,3 @@ install:
 install_precommit:
 	@pre-commit install -t pre-commit
 	@pre-commit install -t pre-push
-
-# help: serve_docs_locally			- Serve docs locally on port 8001
-.PHONY: serve_docs_locally
-serve_docs_locally:
-	@mkdocs serve --livereload -a localhost:8001
-
-# help: deploy_docs				- Deploy documentation to GitHub Pages
-.PHONY: deploy_docs
-deploy_docs:
-	@mkdocs build
-	@mkdocs gh-deploy
