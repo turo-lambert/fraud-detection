@@ -21,7 +21,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-developer.txt
-          pip install optuna xgboost scikit-learn pydantic numpy pickle
+          pip install optuna==4.0.0 xgboost==2.1.2 scikit-learn==1.5.2 pydantic==2.4.2 numpy==1.24.0
       - name: Run Pre commit hook (formatting, linting & tests)
         run: pre-commit run --all-files --hook-stage pre-push --show-diff-on-failure
       - name: run unit tests
