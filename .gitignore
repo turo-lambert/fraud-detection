@@ -1,5 +1,9 @@
-# Avoiding to push data files
-data/
+# Ignore everything in the data/ folder
+data/*
+
+# Allow tracking of the .gitkeep file in data/
+!data/.gitkeep
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -206,5 +210,3 @@ secrets/*
 
 # Mac OS
 .DS_Store
-
-models/
