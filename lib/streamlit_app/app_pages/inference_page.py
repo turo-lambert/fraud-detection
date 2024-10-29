@@ -116,8 +116,15 @@ def write() -> None:
                 processed_obs = pd.DataFrame.from_dict(response.json().get("processed_obs"))
                 shap_values = np.array(response.json().get("shap_values"))
                 st.subheader("SHAP Feature Importance")
-                fig, _ = plt.subplots(figsize=(20, 5))
-                shap.summary_plot(shap_values, processed_obs, plot_type="bar", show=False)
+                fig, _ = plt.subplots()
+                shap.summary_plot(
+                    shap_values,
+                    processed_obs,
+                    plot_type="bar",
+                    show=False,
+                    title="Average impact on model output magnitude",
+                    plot_size=(20, 5),
+                )
                 st.pyplot(fig, use_container_width=True)
 
             else:
